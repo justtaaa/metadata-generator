@@ -26,5 +26,5 @@ To run the project locally, follow these steps:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/metadata-extraction-tool.git
-   cd metadata-extraction-tool
+   git clone https://github.com/justtaaa/metadata-generator
+  
