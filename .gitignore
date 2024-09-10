@@ -1,15 +1,12 @@
-# Ignore all files
-*
-
-# Whitelist specific files
-!.gitignore
-!app.py
-!.env
-!Pipfile
-!Pipfile.lock
-
-# Ignore directories and their contents
-uploads/
-json_outputs/
-templates/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
 venv/
+.env
+uploads/
+*.zip
+
+# Virtual environments
+Pipfile.lock
+.DS_Store

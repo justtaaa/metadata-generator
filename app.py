@@ -1,4 +1,5 @@
 import os
+import io
 import json
 import zipfile
 from flask import Flask, request, render_template, jsonify, send_file, send_from_directory
@@ -459,6 +460,26 @@ def download_json():
         return jsonify({"error": "JSON file not found."}), 404
     
     return send_file(json_file_path, as_attachment=True)
+
+
+@app.route('/download_all', methods=['GET'])
+def download_all():
+    json_folder = app.config['JSON_FOLDER']
+    
+    # Create an in-memory ZIP file
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Add all JSON files to the ZIP
+        for filename in os.listdir(json_folder):
+            if filename.endswith('.json'):
+                file_path = os.path.join(json_folder, filename)
+                zip_file.write(file_path, arcname=filename)
+    
+    zip_buffer.seek(0)  # Set the pointer back to the start of the BytesIO object
+
+    # Send the ZIP file for download
+    return send_file(zip_buffer, as_attachment=True, download_name='all_metadata.zip', mimetype='application/zip')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

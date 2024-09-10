@@ -2,152 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload, Edit, and Download JSON Metadata</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-        }
-        .upload-container {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 20px;
-            text-align: center;
-        }
-        .upload-area {
-            border: 2px dashed #007bff;
-            border-radius: 10px;
-            padding: 30px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: background-color 0.3s;
-        }
-        .upload-area:hover {
-            background-color: #f1f8ff;
-        }
-        .upload-area input {
-            display: none;
-        }
-        .file-info {
-            margin-top: 20px;
-            display: none;
-        }
-        .progress-bar {
-            width: 100%;
-            background-color: #f1f1f1;
-            border-radius: 5px;
-            overflow: hidden;
-            display: none;
-            margin-top: 10px;
-        }
-        .progress {
-            width: 0;
-            height: 10px;
-            background-color: #007bff;
-            transition: width 0.3s;
-        }
-        .button-container {
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: #fff;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #status {
-            margin-top: 20px;
-            color: #333;
-        }
-        .metadata-section {
-            background-color: #e9ecef;
-            border-radius: 10px;
-            padding: 20px; /* Add padding for better spacing */
-            margin-top: 20px;
-            display: none;
-            overflow: hidden; /* To prevent overflow */
-            position: relative; /* For better control of inner elements */
-        }
-                .metadata-section h3 {
-            margin-top: 0;
-        }
-        textarea {
-            width: 100%;
-            min-height: 150px; /* Set a minimum height */
-            max-height: 400px; /* Set a maximum height */
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            font-size: 14px;
-            resize: vertical; /* Allow vertical resize but prevent horizontal */
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-        }
-        .file-list {
-            list-style: none;
-            padding: 0;
-        }
-        .file-list li {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .file-list button {
-            background-color: #28a745;
-            color: #fff;
-            margin-right: 10px;
-        }
-        .file-list a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .file-list a:hover {
-            text-decoration: underline;
-        }
-        /* CSS for the spinner */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #spinner {
-            display: none; /* Hide the spinner by default */
-        }
-    </style>
+    <title>Upload Edit and Download JSON Metadata</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="upload-container">
         <h1>Upload File</h1>
         <div class="upload-area" id="uploadArea">
             <p>Drag and Drop file here or <span id="chooseFile">Choose file</span></p>
-            <input type="file" id="fileInput" accept=".txt,.pptx,.pdf,.xlsx,.zip">
+            <input type="file" id="fileInput" accept=".txt.pptx.pdf.xlsx.zip">
         </div>
         <div class="file-info" id="fileInfo">
             <p id="fileName"></p>
@@ -156,6 +19,9 @@
                 <div class="progress" id="progress"></div>
             </div>
         </div>
+
+        <div id="filePreview" style="margin-top: 20px;"></div>
+
         <div class="button-container">
             <button id="uploadButton">Upload</button>
             <button id="cancelButton">Cancel</button>
@@ -177,179 +43,11 @@
         <ul class="file-list" id="processedFilesList"></ul>
     </div>
 
-    <script>
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const chooseFile = document.getElementById('chooseFile');
-        const uploadButton = document.getElementById('uploadButton');
-        const cancelButton = document.getElementById('cancelButton');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const progressBar = document.getElementById('progressBar');
-        const progress = document.getElementById('progress');
-        const status = document.getElementById('status');
-        const metadataSection = document.getElementById('metadataSection');
-        const metadataTextarea = document.getElementById('metadataTextarea');
-        const saveChangesButton = document.getElementById('saveChangesButton');
-        const downloadJsonButton = document.getElementById('downloadJsonButton');
-        const saveStatus = document.getElementById('saveStatus');
-        const processedFilesList = document.getElementById('processedFilesList');
-        const spinner = document.getElementById('spinner'); // Spinner element
-        let selectedFile;
-        let currentJsonFilePath;
+    <div class="button-container">
+        <button id="downloadAllButton">Download All Files</button> <!-- Add this line -->
+    </div>
     
-        function autoResizeTextarea(textarea) {
-            textarea.style.height = 'auto'; // Reset the height to calculate the scroll height correctly
-            textarea.style.height = (textarea.scrollHeight) + 'px'; // Set new height based on scroll height
-        }
 
-        // Attach the event listener to resize textarea when content is loaded or updated
-        metadataTextarea.addEventListener('input', function() {
-            autoResizeTextarea(metadataTextarea);
-        });
-    
-        uploadArea.addEventListener('click', () => fileInput.click());
-    
-        fileInput.addEventListener('change', (event) => {
-            selectedFile = event.target.files[0];
-            if (selectedFile) {
-                fileName.textContent = selectedFile.name;
-                fileSize.textContent = 'Size: ' + (selectedFile.size / 1024 / 1024).toFixed(2) + ' MB';
-                fileInfo.style.display = 'block';
-                progressBar.style.display = 'block';
-            }
-        });
-    
-        uploadButton.addEventListener('click', () => {
-            if (selectedFile) {
-                spinner.style.display = 'inline-block'; // Show spinner
-    
-                const formData = new FormData();
-                formData.append('textFile', selectedFile);
-    
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/upload', true);
-    
-                xhr.upload.onprogress = function(event) {
-                    if (event.lengthComputable) {
-                        const percentComplete = (event.loaded / event.total) * 100;
-                        progress.style.width = percentComplete + '%';
-                    }
-                };
-    
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        status.textContent = 'Upload successful!';
-                        const response = JSON.parse(xhr.responseText);
-                        status.textContent += '\n' + response.message;
-    
-                        // Show processed files
-                        if (response.processed_files) {
-                            response.processed_files.forEach(file => addFileToList(file));
-                        } else {
-                            addFileToList({
-                                filename: response.metadata.title,
-                                json_file_path: response.json_file_path
-                            });
-                        }
-    
-                        // Reset for next upload
-                        selectedFile = null;
-                        fileInput.value = '';
-                        fileInfo.style.display = 'none';
-                        progressBar.style.display = 'none';
-                        progress.style.width = '0%';
-                    } else {
-                        status.textContent = 'Upload failed!';
-                    }
-                    spinner.style.display = 'none'; // Hide spinner after processing
-                };
-    
-                xhr.send(formData);
-            } else {
-                status.textContent = 'No file selected!';
-            }
-        });
-    
-        cancelButton.addEventListener('click', () => {
-            fileInput.value = '';
-            fileInfo.style.display = 'none';
-            progressBar.style.display = 'none';
-            progress.style.width = '0%';
-            status.textContent = '';
-            metadataSection.style.display = 'none';
-            processedFilesList.innerHTML = '';
-        });
-    
-        saveChangesButton.addEventListener('click', () => {
-            const modifiedMetadata = metadataTextarea.value;
-    
-            fetch('/update_json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    json_file_path: currentJsonFilePath,
-                    modified_metadata: JSON.parse(modifiedMetadata)
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    saveStatus.textContent = 'Error: ' + data.error;
-                } else {
-                    saveStatus.textContent = data.message;
-                }
-            })
-            .catch(error => {
-                saveStatus.textContent = 'Error: ' + error;
-            });
-        });
-    
-        downloadJsonButton.addEventListener('click', () => {
-            const downloadUrl = '/download_json?json_file_path=' + encodeURIComponent(currentJsonFilePath);
-            window.location.href = downloadUrl;
-        });
-    
-        function addFileToList(file) {
-            const li = document.createElement('li');
-            li.textContent = file.filename;
-    
-            const actionsDiv = document.createElement('div');
-            actionsDiv.classList.add('file-actions');
-    
-            const editButton = document.createElement('button');
-            editButton.textContent = 'Edit JSON';
-            editButton.onclick = function() {
-                fetch('/json_outputs/' + file.json_file_path.split('/').pop())
-                    .then(res => res.json())
-                    .then(jsonData => {
-                        metadataTextarea.value = JSON.stringify(jsonData, null, 2);
-                        currentJsonFilePath = file.json_file_path;
-                        metadataSection.style.display = 'block';
-                        autoResizeTextarea(metadataTextarea); // Adjust textarea height when loading new content
-                    })
-                    .catch(error => console.error('Error:', error));
-            };
-    
-            const downloadLink = document.createElement('a');
-            downloadLink.href = '/download_json?json_file_path=' + encodeURIComponent(file.json_file_path);
-            downloadLink.textContent = 'Download JSON';
-    
-            actionsDiv.appendChild(editButton);
-            actionsDiv.appendChild(downloadLink);
-            li.appendChild(actionsDiv);
-            processedFilesList.appendChild(li);
-        }
-    
-        // Event listener to resize the textarea on input
-        metadataTextarea.addEventListener('input', function() {
-            autoResizeTextarea(metadataTextarea);
-        });
-    
-    </script>
-    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
