@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+langchain = "*"
+langchain-openai = "*"
+black = "*"
+python-dotenv = "*"
+langchain-community = "*"
+langchain-core = "*"
+pypdf = "*"
+python-magic = "*"
+flask = "*"
+werkzeug = "*"
+pydantic = "*"  # For data validation and settings management
+requests = "*"  # For making HTTP requests (e.g., to APIs)
+python-magic = "*"  # For MIME type detection
+mimetypes = "*"  # Built-in Python package for handling MIME types
+zipfile36 = "*"  # If you're using a package to work with ZIP files, else use built-in zipfile
+shutil = "*"  # Built-in Python package for file operations
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
