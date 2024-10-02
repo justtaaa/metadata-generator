@@ -1,5 +1,3 @@
-# metadata-generator
-
 # Metadata Extraction Tool
 
 This project is a web-based tool for extracting and processing metadata from various file types, including text files, PowerPoint presentations, PDFs, Excel spreadsheets, and images. It provides a simple user interface for uploading files, editing extracted metadata, and downloading the metadata as JSON files.
